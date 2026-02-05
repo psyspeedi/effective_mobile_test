@@ -30,7 +30,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-effective_mobile}
       SESSION_SECRET: ${SESSION_SECRET}
     ports:
-      - '${PORT:-3000}:3000'
+      - '${PORT:-3000}:${PORT:-3000}'
     volumes:
       - ./src:/app/src
       - ./prisma:/app/prisma

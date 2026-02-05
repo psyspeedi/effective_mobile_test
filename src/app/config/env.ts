@@ -31,4 +31,12 @@ export const config = {
   isDevelopment: process.env.NODE_ENV === 'development',
   isProduction: process.env.NODE_ENV === 'production',
   isTest: process.env.NODE_ENV === 'test',
+
+  // Администратор (опциональные переменные для seed)
+  admin: {
+    email: process.env.ADMIN_EMAIL,
+    password: process.env.ADMIN_PASSWORD,
+    fullName: process.env.ADMIN_FULL_NAME || 'System Administrator',
+    birthDate: process.env.ADMIN_BIRTH_DATE || '1990-01-01',
+  },
 } as const;

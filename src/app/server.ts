@@ -5,6 +5,7 @@ import { sessionConfig } from './config/session';
 import { requestLogger } from '@/shared/middleware/logger';
 import { errorHandler, notFoundHandler } from '@/shared/middleware/error-handler';
 import { logInfo } from '@/shared/lib/logger';
+import { authRoutes } from '@/features/auth/api';
 
 // Импорт типов сессии
 import '@/shared/types/session';
@@ -28,9 +29,8 @@ export const createApp = () => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  // TODO: Подключение роутов
-  // app.use('/auth', authRoutes);
-  // app.use('/users', userRoutes);
+  // Роуты
+  app.use('/auth', authRoutes);
 
   // Обработка 404
   app.use(notFoundHandler);

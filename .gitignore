@@ -1,2 +1,23 @@
+# IDE
 .idea
+.vscode
+
+# Environment
 .env
+.env.local
+
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+
+# Logs
+*.log
+logs
+
+/src/generated/prisma

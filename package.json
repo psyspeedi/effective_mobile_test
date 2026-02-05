@@ -1,0 +1,56 @@
+{
+  "name": "effective_mobile_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/app/index.js",
+  "scripts": {
+    "dev": "tsx watch src/app/index.ts",
+    "build": "tsc",
+    "start": "node dist/app/index.js",
+    "lint": "eslint src --ext .ts",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/psyspeedi/effective_mobile_test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/psyspeedi/effective_mobile_test/issues"
+  },
+  "homepage": "https://github.com/psyspeedi/effective_mobile_test#readme",
+  "dependencies": {
+    "@prisma/client": "^7.3.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.6",
+    "@types/express-session": "^1.18.2",
+    "@types/node": "^25.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prisma": "^7.3.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix"
+    ]
+  }
+}

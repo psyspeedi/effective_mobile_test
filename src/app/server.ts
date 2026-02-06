@@ -6,6 +6,7 @@ import { requestLogger } from '@/shared/middleware/logger';
 import { errorHandler, notFoundHandler } from '@/shared/middleware/error-handler';
 import { logInfo } from '@/shared/lib/logger';
 import { authRoutes } from '@/features/auth/api';
+import { userRoutes } from '@/features/user-management/api';
 
 // Импорт типов сессии
 import '@/shared/types/session';
@@ -31,6 +32,7 @@ export const createApp = () => {
 
   // Роуты
   app.use('/auth', authRoutes);
+  app.use('/users', userRoutes);
 
   // Обработка 404
   app.use(notFoundHandler);

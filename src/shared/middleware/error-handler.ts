@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../lib/errors';
 import { logError } from '../lib/logger';
+import { createErrorResponse } from '../lib/api-response';
+import { HttpStatus } from '@shared/types';
 import '../types/session';
 
 // Middleware для обработки ошибок
@@ -11,7 +13,7 @@ export const errorHandler = (
   _next: NextFunction
 ) => {
   // Определяем статус и сообщение
-  let statusCode = 500;
+  let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
   let message = 'Внутренняя ошибка сервера';
   let isOperational = false;
 
@@ -34,19 +36,19 @@ export const errorHandler = (
   );
 
   // Отправляем ответ клиенту
-  res.status(statusCode).json({
-    status: 'error',
-    message,
-    ...(process.env.NODE_ENV === 'development' && !isOperational
-      ? { stack: err.stack }
-      : {}),
-  });
+  res.status(statusCode).json(
+    createErrorResponse(
+      message,
+      process.env.NODE_ENV === 'development' && !isOperational
+        ? err.stack
+        : undefined
+    )
+  );
 };
 
 // Middleware для обработки 404
 export const notFoundHandler = (req: Request, res: Response) => {
-  res.status(404).json({
-    status: 'error',
-    message: `Маршрут ${req.method} ${req.path} не найден`,
-  });
+  res.status(HttpStatus.NOT_FOUND).json(
+    createErrorResponse(`Маршрут ${req.method} ${req.path} не найден`)
+  );
 };

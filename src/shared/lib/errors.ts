@@ -1,3 +1,5 @@
+import { HttpStatus } from '@/shared/types/api-response';
+
 // Базовый класс ошибки приложения
 export class AppError extends Error {
   public readonly statusCode: number;
@@ -16,48 +18,48 @@ export class AppError extends Error {
 // 400 Bad Request
 export class BadRequestError extends AppError {
   constructor(message = 'Неверный запрос') {
-    super(message, 400);
+    super(message, HttpStatus.BAD_REQUEST);
   }
 }
 
 // 401 Unauthorized
 export class UnauthorizedError extends AppError {
   constructor(message = 'Требуется авторизация') {
-    super(message, 401);
+    super(message, HttpStatus.UNAUTHORIZED);
   }
 }
 
 // 403 Forbidden
 export class ForbiddenError extends AppError {
   constructor(message = 'Доступ запрещен') {
-    super(message, 403);
+    super(message, HttpStatus.FORBIDDEN);
   }
 }
 
 // 404 Not Found
 export class NotFoundError extends AppError {
   constructor(message = 'Ресурс не найден') {
-    super(message, 404);
+    super(message, HttpStatus.NOT_FOUND);
   }
 }
 
 // 409 Conflict
 export class ConflictError extends AppError {
   constructor(message = 'Конфликт данных') {
-    super(message, 409);
+    super(message, HttpStatus.CONFLICT);
   }
 }
 
 // 422 Unprocessable Entity
 export class ValidationError extends AppError {
   constructor(message = 'Ошибка валидации') {
-    super(message, 422);
+    super(message, HttpStatus.UNPROCESSABLE_ENTITY);
   }
 }
 
 // 500 Internal Server Error
 export class InternalServerError extends AppError {
   constructor(message = 'Внутренняя ошибка сервера') {
-    super(message, 500, false);
+    super(message, HttpStatus.INTERNAL_SERVER_ERROR, false);
   }
 }

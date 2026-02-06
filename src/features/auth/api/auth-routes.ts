@@ -2,6 +2,8 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { registerUser, loginUser, getUserById } from '../model/auth-service';
 import { requireAuth } from './auth-middleware';
 import { AppError } from '@/shared/lib/errors';
+import { createSuccessResponse, createSuccessMessage } from '@/shared/lib/api-response';
+import { HttpStatus } from '@/shared/types/api-response';
 import '@/shared/types/session';
 
 const router = Router();
@@ -28,17 +30,17 @@ router.post('/register', async (req: Request<unknown, unknown, RegisterBody>, re
 
   // Валидация входных данных
   if (!fullName || !birthDate || !email || !password) {
-    throw new AppError('Необходимо указать fullName, birthDate, email и password', 400);
+    throw new AppError('Необходимо указать fullName, birthDate, email и password', HttpStatus.BAD_REQUEST);
   }
 
   if (password.length < 6) {
-    throw new AppError('Пароль должен содержать минимум 6 символов', 400);
+    throw new AppError('Пароль должен содержать минимум 6 символов', HttpStatus.BAD_REQUEST);
   }
 
   // Преобразование даты
   const birthDateObj = new Date(birthDate);
   if (isNaN(birthDateObj.getTime())) {
-    throw new AppError('Неверный формат даты рождения', 400);
+    throw new AppError('Неверный формат даты рождения', HttpStatus.BAD_REQUEST);
   }
 
   // Регистрация
@@ -48,10 +50,7 @@ router.post('/register', async (req: Request<unknown, unknown, RegisterBody>, re
   req.session.userId = result.user.id;
   req.session.role = result.user.role;
 
-  res.status(201).json({
-    status: 'success',
-    data: { user: result.user }
-  });
+  res.status(HttpStatus.CREATED).json(createSuccessResponse({ user: result.user }));
 });
 
 /**
@@ -63,7 +62,7 @@ router.post('/login', async (req: Request<unknown, unknown, LoginBody>, res: Res
 
   // Валидация входных данных
   if (!email || !password) {
-    throw new AppError('Необходимо указать email и password', 400);
+    throw new AppError('Необходимо указать email и password', HttpStatus.BAD_REQUEST);
   }
 
   // Вход
@@ -73,10 +72,7 @@ router.post('/login', async (req: Request<unknown, unknown, LoginBody>, res: Res
   req.session.userId = result.user.id;
   req.session.role = result.user.role;
 
-  res.json({
-    status: 'success',
-    data: { user: result.user }
-  });
+  res.json(createSuccessResponse({ user: result.user }));
 });
 
 /**
@@ -86,14 +82,11 @@ router.post('/login', async (req: Request<unknown, unknown, LoginBody>, res: Res
 router.post('/logout', requireAuth, (req: Request, res: Response, next: NextFunction) => {
   req.session.destroy((err) => {
     if (err) {
-      next(new AppError('Ошибка при выходе из системы', 500));
+      next(new AppError('Ошибка при выходе из системы', HttpStatus.INTERNAL_SERVER_ERROR));
       return;
     }
 
-    res.json({
-      status: 'success',
-      message: 'Выход выполнен успешно'
-    });
+    res.json(createSuccessMessage('Выход выполнен успешно'));
   });
 });
 
@@ -105,19 +98,16 @@ router.get('/me', requireAuth, async (req: Request, res: Response) => {
   const userId = req.session.userId;
 
   if (!userId) {
-    throw new AppError('Пользователь не авторизован', 401);
+    throw new AppError('Пользователь не авторизован', HttpStatus.UNAUTHORIZED);
   }
 
   const user = await getUserById(userId);
 
   if (!user) {
-    throw new AppError('Пользователь не найден', 404);
+    throw new AppError('Пользователь не найден', HttpStatus.NOT_FOUND);
   }
 
-  res.json({
-    status: 'success',
-    data: { user }
-  });
+  res.json(createSuccessResponse({ user }));
 });
 
 export default router;

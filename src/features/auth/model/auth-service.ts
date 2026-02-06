@@ -1,6 +1,7 @@
 import { PrismaClient, User, Role } from '@prisma/client';
 import { hashPassword, verifyPassword } from '../lib/password';
 import { AppError } from '@/shared/lib/errors';
+import { HttpStatus } from '@/shared/types/api-response';
 
 const prisma = new PrismaClient();
 
@@ -32,7 +33,7 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
   });
 
   if (existingUser) {
-    throw new AppError('Пользователь с таким email уже существует', 400);
+    throw new AppError('Пользователь с таким email уже существует', HttpStatus.BAD_REQUEST);
   }
 
   // Хеширование пароля
@@ -67,19 +68,19 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
   });
 
   if (!user) {
-    throw new AppError('Неверный email или пароль', 401);
+    throw new AppError('Неверный email или пароль', HttpStatus.UNAUTHORIZED);
   }
 
   // Проверка активности
   if (!user.isActive) {
-    throw new AppError('Пользователь неактивен', 403);
+    throw new AppError('Пользователь неактивен', HttpStatus.FORBIDDEN);
   }
 
   // Проверка пароля
   const isPasswordValid = await verifyPassword(password, user.password);
 
   if (!isPasswordValid) {
-    throw new AppError('Неверный email или пароль', 401);
+    throw new AppError('Неверный email или пароль', HttpStatus.UNAUTHORIZED);
   }
 
   // Убираем пароль из результата

@@ -5,6 +5,7 @@ import { sessionConfig } from './config/session';
 import { requestLogger } from '@/shared/middleware/logger';
 import { errorHandler, notFoundHandler } from '@/shared/middleware/error-handler';
 import { logInfo } from '@/shared/lib/logger';
+import { createHealthResponse } from '@/shared/lib/api-response';
 import { authRoutes } from '@/features/auth/api';
 import { userRoutes } from '@/features/user-management/api';
 
@@ -27,7 +28,7 @@ export const createApp = () => {
 
   // Здоровье сервиса
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json(createHealthResponse());
   });
 
   // Роуты

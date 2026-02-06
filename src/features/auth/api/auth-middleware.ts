@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Role } from '@prisma/client';
 import { AppError } from '@/shared/lib/errors';
+import { HttpStatus } from '@/shared/types/api-response';
 import '@/shared/types/session';
 
 /**
@@ -9,7 +10,7 @@ import '@/shared/types/session';
  */
 export function requireAuth(req: Request, _res: Response, next: NextFunction) {
   if (!req.session?.userId) {
-    throw new AppError('Требуется аутентификация', 401);
+    throw new AppError('Требуется аутентификация', HttpStatus.UNAUTHORIZED);
   }
   next();
 }
@@ -21,15 +22,15 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 export function requireRole(...roles: Role[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.session?.userId) {
-      throw new AppError('Требуется аутентификация', 401);
+      throw new AppError('Требуется аутентификация', HttpStatus.UNAUTHORIZED);
     }
 
     if (!req.session?.role) {
-      throw new AppError('Роль пользователя не определена', 403);
+      throw new AppError('Роль пользователя не определена', HttpStatus.FORBIDDEN);
     }
 
     if (!roles.includes(req.session.role)) {
-      throw new AppError('Недостаточно прав доступа', 403);
+      throw new AppError('Недостаточно прав доступа', HttpStatus.FORBIDDEN);
     }
 
     next();

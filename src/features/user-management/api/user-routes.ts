@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { getAllUsers, getUserById, blockUser, unblockUser } from '../model/user-service';
 import { requireAuth, requireAdmin } from '@/features/auth/api';
 import { NotFoundError, ForbiddenError } from '@/shared/lib/errors';
+import { createSuccessResponse } from '@/shared/lib/api-response';
+import { HttpStatus } from '@/shared/types/api-response';
 import '@/shared/types/session';
 
 const router = Router();
@@ -12,10 +14,7 @@ const router = Router();
  */
 router.get('/', requireAdmin, async (_req: Request, res: Response) => {
   const users = await getAllUsers();
-  res.status(200).json({
-    status: 'success',
-    data: { users },
-  });
+  res.status(HttpStatus.OK).json(createSuccessResponse({ users }));
 });
 
 /**
@@ -30,10 +29,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response) => {
     throw new NotFoundError('Пользователь не найден');
   }
 
-  res.status(200).json({
-    status: 'success',
-    data: { user },
-  });
+  res.status(HttpStatus.OK).json(createSuccessResponse({ user }));
 });
 
 /**
@@ -52,10 +48,7 @@ router.patch('/:id/block', requireAuth, async (req: Request, res: Response) => {
 
   const user = await blockUser(userId);
 
-  res.status(200).json({
-    status: 'success',
-    data: { user },
-  });
+  res.status(HttpStatus.OK).json(createSuccessResponse({ user }));
 });
 
 /**
@@ -74,10 +67,7 @@ router.patch('/:id/unblock', requireAuth, async (req: Request, res: Response) =>
 
   const user = await unblockUser(userId);
 
-  res.status(200).json({
-    status: 'success',
-    data: { user },
-  });
+  res.status(HttpStatus.OK).json(createSuccessResponse({ user }));
 });
 
 export default router;

@@ -30,46 +30,33 @@ src/
 
 - **Docker** >= 20.10
 - **Docker Compose** >= 2.0
-- **Node.js** >= 20 (для локальной разработки без Docker)
+- **Node.js** >= 20
 
-## Быстрый старт с Docker
+## Быстрый старт (Demo режим)
 
-### 1. Клонировать репозиторий
+Запуск одной командой:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/psyspeedi/effective_mobile_test.git
 cd effective_mobile_test
+npm run demo:start
 ```
 
-### 2. Настроить переменные окружения
+Скрипт автоматически:
+- Запустит PostgreSQL и приложение в Docker
+- Дождётся готовности PostgreSQL (healthcheck)
+- Применит миграции базы данных
+- Загрузит тестовые данные (admin пользователь)
 
-```bash
-cp .env.example .env
-```
+API будет доступен на `http://localhost:3001`
 
-Отредактируйте `.env` при необходимости (по умолчанию настроено для локальной разработки).
+Тестовый администратор:
+- Email: `admin@example.com`
+- Пароль: `admin123`
 
-### 3. Запустить приложение и базу данных
+## Development режим (основной)
 
-```bash
-docker compose up -d
-```
-
-Это запустит:
-- **PostgreSQL** на порту `5432`
-- **API приложение** на порту `3000`
-
-### 4. Применить миграции базы данных
-
-```bash
-docker compose exec app npx prisma migrate deploy
-```
-
-### 5. Проверить работу
-
-API будет доступен по адресу: `http://localhost:3000`
-
-## Локальная разработка (без Docker)
+PostgreSQL в Docker, backend локально:
 
 ### 1. Установить зависимости
 
@@ -77,109 +64,117 @@ API будет доступен по адресу: `http://localhost:3000`
 npm install
 ```
 
-### 2. Запустить PostgreSQL
-
-Вы можете использовать только PostgreSQL из Docker:
+### 2. Настроить .env
 
 ```bash
-docker compose up -d postgres
+cp .env.example .env
 ```
 
-Или установить PostgreSQL локально.
-
-### 3. Настроить .env
-
-Убедитесь что `DATABASE_URL` указывает на вашу PostgreSQL базу:
+Убедитесь что `DATABASE_URL` указывает на PostgreSQL:
 
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/effective_mobile
 ```
 
+### 3. Запустить PostgreSQL
+
+```bash
+npm run db:start
+```
+
 ### 4. Применить миграции
 
 ```bash
-npx prisma migrate dev
+npm run prisma:migrate
 ```
 
-### 5. Запустить в режиме разработки
+### 5. Seed (опционально)
+
+```bash
+npm run prisma:seed
+```
+
+Это создаст тестового администратора (email/пароль из `.env`).
+
+### 6. Запустить приложение
 
 ```bash
 npm run dev
 ```
 
-API будет доступен на `http://localhost:3000` с hot-reload.
+API будет доступен на `http://localhost:3001` с hot-reload.
 
-## Доступные команды
+## Development команды
 
-### Docker команды
+### PostgreSQL
 
 ```bash
-# Запустить все сервисы
-docker compose up -d
-
-# Остановить все сервисы
-docker compose down
-
-# Остановить и удалить volumes (удалит данные БД!)
-docker compose down -v
-
-# Посмотреть логи
-docker compose logs -f app
-
-# Пересобрать образ приложения
-docker compose build app
-
-# Выполнить команду в контейнере
-docker compose exec app <command>
+npm run db:start      # Запустить
+npm run db:stop       # Остановить
+npm run db:logs       # Логи
+npm run db:restart    # Перезапуск
+npm run db:clean      # Удалить volumes (удалит данные БД!)
 ```
 
-### NPM команды
+### Приложение
 
 ```bash
-# Разработка (hot-reload)
-npm run dev
+npm run dev           # Запуск с hot-reload
+npm run build         # Сборка
+npm run lint          # Линтинг
+```
 
-# Сборка проекта
-npm run build
+### Prisma
 
-# Запуск production версии
-npm start
+```bash
+npm run prisma:migrate    # Миграции
+npm run prisma:generate   # Генерация Client
+npm run prisma:seed       # Тестовые данные
+```
 
-# Линтинг
-npm run lint
+### Demo режим
 
-# Prisma команды
-npm run prisma:migrate    # Создать и применить миграцию
-npm run prisma:generate   # Сгенерировать Prisma Client
-npm run prisma:studio     # Открыть Prisma Studio
+```bash
+npm run demo:start    # Запустить всё в Docker (миграции применяются автоматически)
+npm run demo:stop     # Остановить
+npm run demo:logs     # Логи приложения
+npm run demo:build    # Пересобрать образ
+npm run demo:rebuild  # Пересобрать без кеша
+npm run demo:clean    # Удалить всё (volumes + контейнеры)
 ```
 
 ## API Endpoints
 
+Все API endpoints доступны с префиксом `/api/v1`
+
 ### Аутентификация
 
-- `POST /auth/register` - Регистрация нового пользователя
-- `POST /auth/login` - Вход в систему
-- `POST /auth/logout` - Выход из системы
+- `POST /api/v1/auth/register` - Регистрация нового пользователя
+- `POST /api/v1/auth/login` - Вход в систему
+- `POST /api/v1/auth/logout` - Выход из системы
 
 ### Управление пользователями
 
-- `GET /users/:id` - Получить пользователя по ID (админ или сам себя)
-- `GET /users` - Список всех пользователей (только админ)
-- `PATCH /users/:id/block` - Заблокировать пользователя (админ или сам себя)
+- `GET /api/v1/users/:id` - Получить пользователя по ID (админ или сам себя)
+- `GET /api/v1/users` - Список всех пользователей (только админ)
+- `PATCH /api/v1/users/:id/block` - Заблокировать пользователя (админ или сам себя)
+
+### Health Check
+
+- `GET /health` - Проверка состояния сервиса (без префикса)
 
 ## Переменные окружения
 
 | Переменная | Описание | Значение по умолчанию |
-|------------|----------|-----------------------|
-| `PORT` | Порт приложения | `3000` |
-| `NODE_ENV` | Окружение | `development` |
-| `POSTGRES_USER` | Имя пользователя PostgreSQL | `postgres` |
-| `POSTGRES_PASSWORD` | Пароль PostgreSQL | `postgres` |
-| `POSTGRES_DB` | Имя базы данных | `effective_mobile` |
-| `POSTGRES_PORT` | Порт PostgreSQL | `5432` |
-| `DATABASE_URL` | URL подключения к базе | См. .env.example |
-| `SESSION_SECRET` | Секретный ключ для сессий | Обязательно изменить! |
+|------------|----------|----------------------|
+| `PORT` | Порт приложения | `3001`               |
+| `NODE_ENV` | Окружение | `development`        |
+| `POSTGRES_USER` | Имя пользователя PostgreSQL | `postgres`           |
+| `POSTGRES_PASSWORD` | Пароль PostgreSQL | `postgres`           |
+| `POSTGRES_DB` | Имя базы данных | `effective_mobile`   |
+| `POSTGRES_PORT` | Порт PostgreSQL | `5432`               |
+| `DATABASE_URL` | URL подключения к базе | cм. .env.example     |
+| `SESSION_SECRET` | Секретный ключ для сессий | `secret`             |
 
 ## Структура базы данных
 
@@ -208,7 +203,7 @@ enum Role {
 
 - Пароли хешируются с помощью **bcrypt**
 - Используются **HTTP-only cookies** для сессий
-- Сессии хранятся в памяти (для production рекомендуется Redis)
+- Сессии хранятся в памяти (для production по-хорошему использовать Redis)
 - Заблокированные пользователи (`isActive = false`) не могут войти в систему
 
 ## Разработка
@@ -230,29 +225,6 @@ npx prisma migrate dev --name <название>
 # Применить миграции (production)
 npx prisma migrate deploy
 
-# Сбросить базу (удалит все данные!)
+# Сбросить базу (удалит все данные)
 npx prisma migrate reset
 ```
-
-### Prisma Studio
-
-Графический интерфейс для работы с базой данных:
-
-```bash
-npm run prisma:studio
-```
-
-Откроется на `http://localhost:5555`
-
-## Production deployment
-
-1. Установить переменные окружения
-2. Изменить `SESSION_SECRET` на безопасное значение
-3. Настроить `NODE_ENV=production`
-4. Рассмотреть использование Redis для хранения сессий
-5. Настроить reverse proxy (nginx)
-6. Использовать managed PostgreSQL (AWS RDS, etc.)
-
-## Лицензия
-
-ISC

@@ -26,14 +26,18 @@ export const createApp = () => {
   // Логирование запросов
   app.use(requestLogger);
 
-  // Здоровье сервиса
+  // Здоровье сервиса (без префикса для мониторинга)
   app.get('/health', (_req, res) => {
     res.json(createHealthResponse());
   });
 
-  // Роуты
-  app.use('/auth', authRoutes);
-  app.use('/users', userRoutes);
+  // API роуты с версионированием
+  const apiRouter = express.Router();
+  apiRouter.use('/auth', authRoutes);
+  apiRouter.use('/users', userRoutes);
+
+  // Регистрация API роутов с префиксом /api/v1
+  app.use('/api/v1', apiRouter);
 
   // Обработка 404
   app.use(notFoundHandler);

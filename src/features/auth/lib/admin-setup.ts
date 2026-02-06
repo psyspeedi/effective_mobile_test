@@ -1,5 +1,6 @@
 import { PrismaClient, Role, type User } from '@prisma/client';
 import { hashPassword } from './password.js';
+import { parseAndValidateDate } from '@/shared/lib/date-utils.js';
 
 /**
  * Параметры для создания администратора
@@ -33,6 +34,12 @@ export async function createDefaultAdmin(
 ): Promise<AdminSetupResult> {
   const { email, password, fullName, birthDate } = params;
 
+  // Валидируем дату рождения
+  const parsedBirthDate = parseAndValidateDate(birthDate);
+  if (!parsedBirthDate) {
+    throw new Error(`Невалидная дата рождения: ${birthDate}`);
+  }
+
   // Хешируем пароль
   const hashedPassword = await hashPassword(password);
 
@@ -47,7 +54,7 @@ export async function createDefaultAdmin(
     update: {
       password: hashedPassword,
       fullName,
-      birthDate: new Date(birthDate),
+      birthDate: parsedBirthDate,
       role: Role.ADMIN,
       isActive: true,
     },
@@ -55,7 +62,7 @@ export async function createDefaultAdmin(
       email,
       password: hashedPassword,
       fullName,
-      birthDate: new Date(birthDate),
+      birthDate: parsedBirthDate,
       role: Role.ADMIN,
       isActive: true,
     },

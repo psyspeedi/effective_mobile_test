@@ -2,6 +2,7 @@
 import { PrismaClient } from '@prisma/client';
 import { createDefaultAdmin } from '../src/features/auth/lib/admin-setup.js';
 import { config } from '../src/app/config/env.js';
+import { parseAndValidateDate } from '../src/shared/lib/date-utils.js';
 
 const prisma = new PrismaClient();
 
@@ -24,13 +25,7 @@ function isValidPassword(password: string): boolean {
  * Валидация даты в формате YYYY-MM-DD
  */
 function isValidDate(dateString: string): boolean {
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRegex.test(dateString)) {
-    return false;
-  }
-
-  const date = new Date(dateString);
-  return date instanceof Date && !isNaN(date.getTime());
+  return parseAndValidateDate(dateString) !== null;
 }
 
 /**
@@ -79,7 +74,7 @@ function getAdminParams(): {
 
   // Валидация обязательных параметров
   if (!email || !password) {
-    console.error('❌ Ошибка: Email и пароль обязательны!');
+    console.error('Ошибка: Email и пароль обязательны!');
     console.error('\nИспользование:');
     console.error('  npm run admin:create -- --email=admin@example.com --password=SecurePass123');
     console.error('\nИли через переменные окружения:');
@@ -94,7 +89,7 @@ function getAdminParams(): {
 }
 
 async function main() {
-  console.log('🔧 Создание администратора...\n');
+  console.log('Создание администратора...\n');
 
   try {
     // Получаем параметры
@@ -102,24 +97,24 @@ async function main() {
 
     // Валидация email
     if (!isValidEmail(params.email)) {
-      console.error(`❌ Неверный формат email: ${params.email}`);
+      console.error(`Неверный формат email: ${params.email}`);
       process.exit(1);
     }
 
     // Валидация пароля
     if (!isValidPassword(params.password)) {
-      console.error('❌ Пароль должен содержать минимум 6 символов');
+      console.error('Пароль должен содержать минимум 6 символов');
       process.exit(1);
     }
 
     // Валидация даты рождения
     if (!isValidDate(params.birthDate)) {
-      console.error(`❌ Неверный формат даты рождения: ${params.birthDate}`);
+      console.error(`Неверный формат даты рождения: ${params.birthDate}`);
       console.error('   Ожидается формат: YYYY-MM-DD (например, 1990-01-01)');
       process.exit(1);
     }
 
-    console.log('📋 Параметры администратора:');
+    console.log('Параметры администратора:');
     console.log(`   Email: ${params.email}`);
     console.log(`   Имя: ${params.fullName}`);
     console.log(`   Дата рождения: ${params.birthDate}`);
@@ -129,23 +124,23 @@ async function main() {
     const result = await createDefaultAdmin(prisma, params);
 
     if (result.created) {
-      console.log('✅ Администратор успешно создан!');
+      console.log('Администратор успешно создан!');
     } else {
-      console.log('✅ Администратор обновлен (уже существовал)!');
+      console.log('Администратор обновлен (уже существовал)!');
     }
 
-    console.log(`\n📌 ID: ${result.user.id}`);
-    console.log(`📌 Email: ${result.user.email}`);
-    console.log(`📌 Роль: ${result.user.role}`);
-    console.log(`📌 Активен: ${result.user.isActive ? 'Да' : 'Нет'}`);
+    console.log(`\nID: ${result.user.id}`);
+    console.log(`Email: ${result.user.email}`);
+    console.log(`Роль: ${result.user.role}`);
+    console.log(`Активен: ${result.user.isActive ? 'Да' : 'Нет'}`);
 
-    console.log('\n✨ Готово! Вы можете войти с указанными credentials.');
+    console.log('\nГотово! Вы можете войти с указанными credentials.');
   } catch (error) {
-    console.error('\n❌ Ошибка при создании администратора:');
+    console.error('\nОшибка при создании администратора:');
     if (error instanceof Error) {
-      console.error(`   ${error.message}`);
+      console.error(`${error.message}`);
     } else {
-      console.error('   Неизвестная ошибка');
+      console.error('Неизвестная ошибка');
     }
     process.exit(1);
   }
@@ -153,7 +148,7 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error('❌ Критическая ошибка:', error);
+    console.error('Критическая ошибка:', error);
     process.exit(1);
   })
   .finally(async () => {

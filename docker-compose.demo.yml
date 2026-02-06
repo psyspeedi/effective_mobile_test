@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: effective_mobile_postgres_demo
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-effective_mobile}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data_demo:/var/lib/postgresql/data
+    networks:
+      - demo_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: effective_mobile_app_demo
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3001}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-effective_mobile}
+      SESSION_SECRET: ${SESSION_SECRET}
+    ports:
+      - '${PORT:-3001}:${PORT:-3001}'
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - /app/node_modules
+    networks:
+      - demo_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Применение миграций...' &&
+        npx prisma migrate deploy &&
+        echo 'Загрузка тестовых данных...' &&
+        npm run prisma:seed &&
+        echo 'Запуск приложения...' &&
+        npm run dev
+      "
+
+networks:
+  demo_network:
+    driver: bridge
+
+volumes:
+  postgres_data_demo:
